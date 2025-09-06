@@ -67,11 +67,12 @@ const ProductCard = ({
     toast.success(`${name} added to cart!`);
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevents the Link from navigating
     e.stopPropagation();
-    toggleWishlist({ id, name, brand, price, image: image_urls[0] });
-  };
+    const isPart = !!brand && !category; // Determine if the item is a part
+    toggleWishlist({ id, name, brand, price, image: image_urls[0], is_part: isPart }); // Pass the is_part flag
+};
   
   // Choose the image to display. Default to the first one if the array is valid.
   const displayImage = image_urls && image_urls.length > 0 ? image_urls[currentImageIndex] : '/placeholder.svg';
@@ -154,19 +155,6 @@ const ProductCard = ({
               )}
             </div>
             
-            {/* Wishlist button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 h-8 w-8 p-0 bg-background/80 hover:bg-background"
-              onClick={handleWishlist}
-            >
-              <Heart
-                className={`h-4 w-4 ${
-                  isWishlisted(id) ? "fill-red-500 text-red-500" : "text-muted-foreground"
-                }`}
-              />
-            </Button>
           </div>
 
           <div className="p-4">
@@ -209,13 +197,29 @@ const ProductCard = ({
           </div>
         </CardContent>
 
-        <CardFooter className="p-4 pt-0">
+        <CardFooter className="p-4 pt-0 flex gap-2">
+          {/* New Wishlist button placed next to the "Add to Cart" button */}
           <Button
-            className="w-full"
+            variant="outline"
+            size="icon"
+            onClick={handleWishlist}
+            className={cn(
+              "w-12 h-12 flex-shrink-0",
+              isWishlisted(id) ? "bg-red-500 text-white hover:bg-red-600" : "hover:bg-accent hover:text-accent-foreground"
+            )}
+            title={isWishlisted(id) ? "Remove from Wishlist" : "Add to Wishlist"}
+          >
+            <Heart className={cn("h-5 w-5", isWishlisted(id) ? "fill-white" : "fill-none")} />
+            <span className="sr-only">Toggle Wishlist</span>
+          </Button>
+
+          {/* Existing "Add to Cart" button */}
+          <Button
+            className="flex-1 h-12"
             onClick={onAddToCart ? onAddToCart : handleAddToCart}
             disabled={!inStock}
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
+            <ShoppingCart className="h-5 w-5 mr-2" />
             {inStock ? "Add to Cart" : "Out of Stock"}
           </Button>
         </CardFooter>

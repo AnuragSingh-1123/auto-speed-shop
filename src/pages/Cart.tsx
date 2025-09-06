@@ -1,4 +1,3 @@
-// src/pages/Cart.tsx
 import { useState } from "react";
 import { Plus, Minus, Trash2, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,13 +7,15 @@ import { Separator } from "@/components/ui/separator";
 import { Link } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 
+const TAX_RATE = 0.08; // Standardized Tax Rate
+
 const Cart = () => {
   const { cartItems, removeFromCart, clearCart, increaseQuantity, decreaseQuantity } = useCart();
   const [promoCode, setPromoCode] = useState("");
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 75 ? 0 : 9.99;
-  const tax = subtotal * 0.08;
+  const shipping = subtotal > 275 ? 0 : 9.99;
+  const tax = subtotal * TAX_RATE;
   const total = subtotal + shipping + tax;
 
   if (cartItems.length === 0) {
@@ -134,8 +135,8 @@ const Cart = () => {
             </Card>
 
             {/* Checkout Button */}
-            <Button size="lg" className="w-full">
-              Proceed to Checkout
+            <Button size="lg" className="w-full" asChild>
+              <Link to="/checkout">Proceed to Checkout</Link>
             </Button>
 
             {/* Shipping Info */}

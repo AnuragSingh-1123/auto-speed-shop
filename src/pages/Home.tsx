@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Search, Wrench, Truck, Shield, Star, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import BrandCarousel from "@/components/BrandCarousel"; // 1. Import the new component
 
 // Define the type for a product object to ensure type safety
 interface Product {
@@ -33,8 +35,12 @@ const Home = () => {
   const [selectedModel, setSelectedModel] = useState("");
   const navigate = useNavigate();
 
+  const yearSelectRef = useRef<HTMLDivElement>(null);
+  const makeSelectRef = useRef<HTMLDivElement>(null);
+  const modelSelectRef = useRef<HTMLDivElement>(null);
+
   // Fetch featured products from Supabase
-  // We use the new `Product` type to ensure the data is correctly structured
+  // We use the new Product type to ensure the data is correctly structured
   const { data: featuredProducts = [] } = useQuery<Product[]>({
     queryKey: ['featured-products'],
     queryFn: async () => {
@@ -125,6 +131,29 @@ const Home = () => {
     navigate(`/shop?${searchParams.toString()}`);
   };
 
+  const handleMouseEnter = (ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) {
+      let scrollAmount = 0;
+      const scrollStep = 1;
+      let frame: number;
+
+      const scroll = () => {
+        ref.current!.scrollTop += scrollStep;
+        scrollAmount += scrollStep;
+        if (scrollAmount < ref.current!.scrollHeight - ref.current!.clientHeight) {
+          frame = window.requestAnimationFrame(scroll);
+        }
+      };
+
+      frame = window.requestAnimationFrame(scroll);
+
+      ref.current.addEventListener("mouseleave", () => {
+        window.cancelAnimationFrame(frame);
+        ref.current!.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
@@ -159,7 +188,10 @@ const Home = () => {
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Year" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent
+                    ref={yearSelectRef}
+                    onMouseEnter={() => handleMouseEnter(yearSelectRef)}
+                  >
                     {vehicleYears.map(year => (
                       <SelectItem key={year} value={year.toString()}>
                         {year}
@@ -172,7 +204,10 @@ const Home = () => {
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Make" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent
+                    ref={makeSelectRef}
+                    onMouseEnter={() => handleMouseEnter(makeSelectRef)}
+                  >
                     {vehicleMakes.map(make => (
                       <SelectItem key={make.name} value={make.name}>
                         {make.name}
@@ -185,14 +220,17 @@ const Home = () => {
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Model" />
                   </SelectTrigger>
-                    <SelectContent>
-                      {vehicleModels.map(model => (
-                        <SelectItem key={model} value={model}>
-                          {model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SelectContent
+                    ref={modelSelectRef}
+                    onMouseEnter={() => handleMouseEnter(modelSelectRef)}
+                  >
+                    {vehicleModels.map(model => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                   
                   <Button size="lg" className="h-12 shadow-primary hover:shadow-lg transition-all duration-300" onClick={handleSearch}>
                     <Search className="h-5 w-5 mr-2" />
@@ -203,6 +241,9 @@ const Home = () => {
             </Card>
           </div>
         </section>
+
+        {/* 2. Add the Brand Carousel component here */}
+        <BrandCarousel />
 
         {/* Features */}
         <section className="py-24 bg-background">
@@ -245,17 +286,19 @@ const Home = () => {
                   <p className="text-muted-foreground text-sm">Get professional advice from our experienced team.</p>
                 </CardContent>
               </Card>
-              <Card className="text-center p-6 transition-all duration-300 hover:shadow-lg hover:border-primary border-transparent hover:scale-105 animate-fade-in-up delay-300">
-                <CardHeader className="p-0">
-                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="h-8 w-8 text-primary-foreground" />
-                  </div>
-                  <CardTitle className="font-semibold text-lg">New Arrivals</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 pt-2">
-                  <p className="text-muted-foreground text-sm">Always the latest and greatest products in stock.</p>
-                </CardContent>
-              </Card>
+              <Link to="/new-arrivals">
+                <Card className="text-center p-6 transition-all duration-300 hover:shadow-lg hover:border-primary border-transparent hover:scale-105 animate-fade-in-up delay-300">
+                  <CardHeader className="p-0">
+                    <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Sparkles className="h-8 w-8 text-primary-foreground" />
+                    </div>
+                    <CardTitle className="font-semibold text-lg">New Arrivals</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0 pt-2">
+                    <p className="text-muted-foreground text-sm">Always the latest and greatest products in stock.</p>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           </div>
         </section>

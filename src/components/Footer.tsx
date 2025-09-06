@@ -3,9 +3,54 @@ import { Facebook, Twitter, Instagram, Youtube, Phone, Mail, MapPin } from "luci
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import CarWrenchLogo from "@/assets/car-wrench-logo.png"; // Import the logo
+import CarWrenchLogo from "@/assets/car-wrench-logo.png";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+  e.preventDefault();
+  console.log("Form submitted with email:", email);
+  setIsSubscribing(true);
+
+  if (!email || !email.includes("@")) {
+    toast.error("Please enter a valid email address.");
+    setIsSubscribing(false);
+    return;
+  }
+
+  try {
+    console.log("Attempting to insert email:", email);
+    const { data, error } = await supabase
+      .from("subscribers")
+      .insert([{ email: email.trim().toLowerCase() }]);
+
+    console.log("Supabase response:", { data, error });
+
+    if (error) {
+      console.error("Subscription error details:", error.message, error.code, error.details, error);
+      if (error.code === '23505') {
+        toast.info("You are already subscribed!");
+      } else {
+        toast.error(`Failed to subscribe: ${error.message || 'Unknown error'}`);
+      }
+    } else {
+      console.log("Successfully subscribed:", data);
+      toast.success("You have been successfully subscribed!");
+      setEmail("");
+    }
+  } catch (err) {
+    console.error("An unexpected error occurred:", err);
+    toast.error("An unexpected error occurred. Please try again.");
+  } finally {
+    setIsSubscribing(false);
+  }
+};
+
   return (
     <footer className="bg-background text-foreground">
       <div className="container mx-auto px-4 py-12">
@@ -13,29 +58,37 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-                <img src={CarWrenchLogo} alt="AutoParts Pro Logo" className="h-14 w-auto" />
-                <div className="whitespace-nowrap flex-shrink-0">
-                  <h1 className="text-2xl font-bold text-foreground">AutoParts Pro</h1>
-                  <p className="text-sm text-muted-foreground">Premium Auto Parts</p>
-                </div>
+              <img src={CarWrenchLogo} alt="AutoParts Pro Logo" className="h-14 w-auto" />
+              <div className="whitespace-nowrap flex-shrink-0">
+                <h1 className="text-2xl font-bold text-foreground">AutoParts Pro</h1>
+                <p className="text-sm text-muted-foreground">Premium Auto Parts</p>
+              </div>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Your trusted source for high-quality auto parts, accessories, and tools. 
+              Your trusted source for high-quality auto parts, accessories, and tools.
               Serving professionals and enthusiasts since 2010.
             </p>
             <div className="flex space-x-4">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary-hover p-2">
-                <Facebook className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary-hover p-2">
-                <Twitter className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary-hover p-2">
-                <Instagram className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary-hover p-2">
-                <Youtube className="h-4 w-4" />
-              </Button>
+              <a href="https://www.facebook.com/share/1HWqypCZvo/" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary-hover p-2">
+                  <Facebook className="h-4 w-4" />
+                </Button>
+              </a>
+              <a href="#" target="_self" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary-hover p-2">
+                  <Twitter className="h-4 w-4" />
+                </Button>
+              </a>
+              <a href="https://www.instagram.com/digital_indian16?igsh=cDZ3NWliNGZyZDRp" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary-hover p-2">
+                  <Instagram className="h-4 w-4" />
+                </Button>
+              </a>
+              <a href="https://youtube.com/@digitalindianbusinesssolut108?si=pBt6rFSYOWIU4jEt" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary-hover p-2">
+                  <Youtube className="h-4 w-4" />
+                </Button>
+              </a>
             </div>
           </div>
 
@@ -65,21 +118,21 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Customer Service</h3>
             <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">(555) 123-PART</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-primary" />
-                <span className="text-sm text-muted-foreground">support@autopartspro.com</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <MapPin className="h-4 w-4 text-primary mt-0.5" />
-                <div className="text-sm text-muted-foreground">
-                  <p>1234 Auto Parts Ave</p>
-                  <p>Detroit, MI 48201</p>
+              <a href="tel:+919874139807" className="flex items-center space-x-2 group">
+                <Phone className="h-4 w-4 text-primary group-hover:text-primary-hover transition-colors" />
+                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">+91 9874139807</span>
+              </a>
+              <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sunvisiontech@gmail.com" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-2 group">
+                <Mail className="h-4 w-4 text-primary group-hover:text-primary-hover transition-colors" />
+                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">sunvisiontech@gmail.com</span>
+              </a>
+              <a href="https://www.google.com/maps/place/EN+BLOCK,+EN+-+9,+EN+Block,+Sector+V,+Bidhannagar,+Kolkata,+West+Bengal+700091/@22.5739445,88.4340093,17z/data=!4m14!1m7!3m6!1s0x3a0275d29bfb54f9:0xfe248df0c3f4ab15!2sDIGITAL+CAFFE'-kolkata+coworks!8m2!3d22.5821591!4d88.4342347!16s%2Fg%2F11dfswgyxb!3m5!1s0x3a0275afb2dd949b:0xcaff4cf09f3240cf!8m2!3d22.5736058!4d88.43239!16s%2Fg%2F11rkm75qlp?entry=ttu&g_ep=EgoyMDI1MDgzMC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener noreferrer" className="flex items-start space-x-2 group">
+                <MapPin className="h-4 w-4 text-primary mt-0.5 group-hover:text-primary-hover transition-colors" />
+                <div className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                  <p>EN-9, SALTLAKE</p>
+                  <p>SECTOR-5 KOLKATA-700091</p>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
 
@@ -89,16 +142,19 @@ const Footer = () => {
             <p className="text-sm text-muted-foreground">
               Get the latest deals and new arrivals straight to your inbox.
             </p>
-            <div className="space-y-2">
+            <form onSubmit={handleSubscribe} className="space-y-2">
               <Input
                 type="email"
                 placeholder="Enter your email"
                 className="bg-secondary border-border text-foreground placeholder:text-muted-foreground"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isSubscribing}
               />
-              <Button className="w-full">
-                Subscribe
+              <Button type="submit" className="w-full" disabled={isSubscribing}>
+                {isSubscribing ? "Subscribing..." : "Subscribe"}
               </Button>
-            </div>
+            </form>
           </div>
         </div>
 
